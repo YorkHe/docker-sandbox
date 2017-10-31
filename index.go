@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
+	"path/filepath"
 
 	"github.com/urfave/cli"
 )
@@ -56,10 +58,27 @@ func main() {
 
 func runJarFile(c *cli.Context) error {
 	fmt.Println("Run a jar file : ", c.Args().First())
+
 	return nil
 }
 
 func runBinaryFile(c *cli.Context) error {
 	fmt.Println("Run a binary file: ", c.Args().First())
-	return nil
+
+	ex, err := os.Executable()
+
+	if err != nil {
+		return err
+	}
+
+	exPath := filepath.Dir(ex)
+
+	cmd := exec.Command("docker", "run", "ubuntu:latest", "-v", exPath+":/test", "ls /test")
+
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+
+	err = cmd.Run()
+
+	return err
 }

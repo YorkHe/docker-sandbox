@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 
 	"github.com/urfave/cli"
 )
@@ -38,6 +37,10 @@ func main() {
 			Action: func(c *cli.Context) error {
 				err := runJarFile(c)
 
+				if err != nil {
+					fmt.Errorf("%v", err)
+				}
+
 				return err
 			},
 		},
@@ -48,6 +51,10 @@ func main() {
 			Action: func(c *cli.Context) error {
 				err := runBinaryFile(c)
 
+				if err != nil {
+					fmt.Errorf("%v", err)
+				}
+
 				return err
 			},
 		},
@@ -57,23 +64,22 @@ func main() {
 }
 
 func runJarFile(c *cli.Context) error {
-	fmt.Println("Run a jar file : ", c.Args().First())
+	exPath, err := os.Getwd()
 
-	return nil
+	cmd := exec.Command("docker", "run", "--rm", "--network", "none", "-it", "-a", "stdin", "-a", "stdout", "-a", "stderr", "-v", exPath+":/test", "openjdk:latest", "/bin/bash", "-c", "cd /test && java -jar "+c.Args().First())
+
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+
+	err = cmd.Run()
+
+	return err
 }
 
 func runBinaryFile(c *cli.Context) error {
-	fmt.Println("Run a binary file: ", c.Args().First())
+	exPath, err := os.Getwd()
 
-	ex, err := os.Executable()
-
-	if err != nil {
-		return err
-	}
-
-	exPath := filepath.Dir(ex)
-
-	cmd := exec.Command("docker", "run", "ubuntu:latest", "-v", exPath+":/test", "ls /test")
+	cmd := exec.Command("docker", "run", "--rm", "--network", "none", "-it", "-a", "stdin", "-a", "stdout", "-a", "stderr", "-v", exPath+":/test", "ubuntu:latest", "/bin/bash", "-c", "cd /test && ./"+c.Args().First())
 
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout

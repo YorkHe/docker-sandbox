@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/urfave/cli"
@@ -22,22 +23,43 @@ func main() {
 			Usage: "Output are written into `FILE`",
 		},
 		cli.StringFlag{
-			Name:  "binary, b",
-			Usage: "Run Binary File -- `FILE`",
-		},
-		cli.StringFlag{
-			Name:  "jar, j",
-			Usage: "Run jar file -- `FILE`",
-		},
-		cli.StringFlag{
 			Name:  "memory, m",
 			Usage: "Memory Limit --memory 300m",
 		},
 	}
 
-	app.Action = func(c *cli.Context) error {
-		return nil
+	app.Commands = []cli.Command{
+		{
+			Name:    "jar",
+			Aliases: []string{"a"},
+			Usage:   "Run a jar file",
+			Action: func(c *cli.Context) error {
+				err := runJarFile(c)
+
+				return err
+			},
+		},
+		{
+			Name:    "binary",
+			Aliases: []string{"b"},
+			Usage:   "Run a binary file",
+			Action: func(c *cli.Context) error {
+				err := runBinaryFile(c)
+
+				return err
+			},
+		},
 	}
 
 	app.Run(os.Args)
+}
+
+func runJarFile(c *cli.Context) error {
+	fmt.Println("Run a jar file : ", c.Args().First())
+	return nil
+}
+
+func runBinaryFile(c *cli.Context) error {
+	fmt.Println("Run a binary file: ", c.Args().First())
+	return nil
 }
